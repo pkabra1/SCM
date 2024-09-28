@@ -3,11 +3,22 @@ package com.scm.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.scm.entities.User;
+import com.scm.forms.UserForm;
+import com.scm.services.UserService;
 
 @Controller
 public class PageController {
+
+    private final UserService userService;
+
+    public PageController(UserService userService) {
+        this.userService = userService;
+    }
 
     @RequestMapping("/home")
     public String home(Model model) {
@@ -44,8 +55,41 @@ public class PageController {
     }
 
     @GetMapping("/register")
-    public String register() {
+    public String register(Model model) {
+        UserForm userForm = new UserForm();
+        userForm.setName("Pranshu");
+        model.addAttribute("userForm", userForm);
         return "register";
     }
-    
+
+    @PostMapping(value = "/do-register")
+    public String processRegister(@ModelAttribute UserForm userForm) {
+        System.out.println("Proccessing Form");
+        // fetch form data
+        System.out.println(userForm.toString());
+        // validate form data
+        // TODO::Validate userForm
+        // save to database
+        // userForm --> User
+        // User user = User.builder()
+        //         .name(userForm.getName())
+        //         .email(userForm.getEmail())
+        //         .password(userForm.getPassword())
+        //         .phoneNumber(userForm.getPhoneNumber())
+        //         .profileLink("https://media.licdn.com/dms/image/v2/D4D03AQFU92-cqb4NvQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1668202755390?e=2147483647&v=beta&t=Zk5DOuv3zK58Yx_-KQfAXtUodumxsX4tfd51ONulPlw")
+        //         .about(userForm.getAbout()).build();
+        User user = new User();
+        user.setName(userForm.getName());
+        user.setEmail(userForm.getEmail());
+        user.setPassword(userForm.getPassword());
+        user.setAbout(userForm.getAbout());
+        user.setPhoneNumber(userForm.getPhoneNumber());
+        user.setProfileLink("https://media.licdn.com/dms/image/v2/D4D03AQFU92-cqb4NvQ/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1668202755390?e=2147483647&v=beta&t=Zk5DOuv3zK58Yx_-KQfAXtUodumxsX4tfd51ONulPlw");
+
+        User savedUser = userService.saveUser(user);
+        System.out.println("User saved");
+        // message = "Registration Successful"
+        // redirect to login page
+        return "redirect:/register";
+    }
 }

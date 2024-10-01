@@ -2,6 +2,7 @@ package com.scm.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,7 @@ import com.scm.helper.MessageType;
 import com.scm.services.UserService;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 
 @Controller
 public class PageController {
@@ -67,12 +69,15 @@ public class PageController {
     }
 
     @PostMapping(value = "/do-register")
-    public String processRegister(@ModelAttribute UserForm userForm, HttpSession session) {
+    public String processRegister(@Valid @ModelAttribute UserForm userForm, BindingResult rBindingResult, HttpSession session) {
         System.out.println("Proccessing Form");
         // fetch form data
         System.out.println(userForm.toString());
         // validate form data
-        // TODO::Validate userForm
+        // Validate userForm
+        if (rBindingResult.hasErrors()) {
+            return "register";
+        }
         // save to database
         // userForm --> User
         // User user = User.builder()

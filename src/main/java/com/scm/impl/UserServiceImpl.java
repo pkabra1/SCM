@@ -6,10 +6,12 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 
 import com.scm.entities.User;
+import com.scm.helper.AppConstants;
 import com.scm.repositories.UserRepository;
 import com.scm.services.UserService;
 
@@ -17,11 +19,15 @@ import com.scm.services.UserService;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    private PasswordEncoder passwordEncoder;
+
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         super();
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -29,7 +35,11 @@ public class UserServiceImpl implements UserService {
         // user id: have to generate
         String userId = UUID.randomUUID().toString();
         user.setUserId(userId);
-        // TODO - password encoder
+        // password encoder
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // set the user role
+        user.setRoleList(List.of(AppConstants.ROLE_USER));
+        logger.info(user.getProvider().toString());
         return userRepository.save(user);
     }
 

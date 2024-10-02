@@ -1,10 +1,18 @@
 package com.scm.entities;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -17,7 +25,7 @@ import lombok.Builder;
 @Entity(name = "user")
 @Table(name = "users")
 @Builder
-public class User {
+public class User implements UserDetails {
 
     @Id
     private String userId;
@@ -38,7 +46,7 @@ public class User {
 
     private String phoneNumber;
 
-    private boolean enabled = false;
+    private boolean enabled = true;
 
     private boolean emailVerified = false;
 
@@ -57,7 +65,7 @@ public class User {
 
     public User(String userId, String name, String email, String password, String about, String profileLink,
             String phoneNumber, boolean enabled, boolean emailVerified, boolean phoneVerified, Providers provider,
-            String providerUserId, List<Contact> contacts) {
+            String providerUserId, List<Contact> contacts, List<String> roleList) {
         this.userId = userId;
         this.name = name;
         this.email = email;
@@ -71,6 +79,7 @@ public class User {
         this.provider = provider;
         this.providerUserId = providerUserId;
         this.contacts = contacts;
+        this.roleList = roleList;
     }
 
     public String getUserId() {
@@ -97,6 +106,7 @@ public class User {
         this.email = email;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
@@ -129,6 +139,7 @@ public class User {
         this.phoneNumber = phoneNumber;
     }
 
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
@@ -175,6 +186,29 @@ public class User {
 
     public void setContacts(List<Contact> contacts) {
         this.contacts = contacts;
+    }
+
+    public List<String> getRoleList() {
+        return roleList;
+    }
+
+    public void setRoleList(List<String> roleList) {
+        this.roleList = roleList;
+    }
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    private List<String> roleList = new ArrayList<>();
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // collection of SimpleGrantedAuthority[roles{ADMIN, USER}]
+        Collection<SimpleGrantedAuthority> roles = roleList.stream().map(role -> new SimpleGrantedAuthority(role)).collect(Collectors.toList());
+        return roles;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.email;
     }
 
 }

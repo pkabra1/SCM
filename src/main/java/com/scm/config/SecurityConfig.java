@@ -24,8 +24,11 @@ public class SecurityConfig {
     // }
     private SecurityCustomUserDetailService userDetailService;
 
-    public SecurityConfig(SecurityCustomUserDetailService userDetailService) {
+    private OAuthAuthenticationSuccessHandler oauthHandler;
+
+    public SecurityConfig(SecurityCustomUserDetailService userDetailService, OAuthAuthenticationSuccessHandler oauthHandler) {
         this.userDetailService = userDetailService;
+        this.oauthHandler = oauthHandler;
     }
 
     // configuration of authentication provider for spring security
@@ -82,6 +85,12 @@ public class SecurityConfig {
         httpSecurity.logout(logoutForm -> {
             logoutForm.logoutUrl("/do-logout");
             logoutForm.logoutSuccessUrl("/login?logout=true");
+        });
+
+        // oauth2 configuration
+        httpSecurity.oauth2Login(oauth -> {
+            oauth.loginPage("/login");
+            oauth.successHandler(oauthHandler);
         });
 
         return httpSecurity.build();
